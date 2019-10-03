@@ -8,13 +8,18 @@ cat <<EOM > command/main.go
 package main
 
 import (
+	"flag"
 	gowsh "go-wsh"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 type runtime struct {
@@ -51,13 +56,20 @@ func main() {
 	log.Println("[INFO] Starting API")
 	rt := newRuntime()
 	rt.loadConfiguration()
-	rt.wg.Add(2)
+	rt.wg.Add(1)
 	log.Println("[INFO] Starting HTTP server")
 	go rt.serveHTTP(router())
 	log.Println("[INFO] Starting Websocket Hub")
 	hub = gowsh.NewEventHub()
+	hub.AddHandler("TEST_WS", testWs)
 	go hub.Run()
+	go testWebSocketConnection(rt.wg)
 	rt.wg.Wait()
+}
+
+func testWs(message *gowsh.EventMessage) {
+	message.Data = "Funciona"
+	message.Client.SendMessage(message)
 }
 
 func router() *mux.Router {
@@ -105,5 +117,49 @@ func addClientGroup(groupID string, newClientSes *gowsh.ClientSession, hub *gows
 	hub.AddGroup(newClientGroup)
 	return newClientGroup.ID
 }
+
+var addr = flag.String("addr", "localhost:8080", "http service address")
+
+func testWebSocketConnection(wg *sync.WaitGroup) {
+	defer wg.Done()
+	flag.Parse()
+	log.SetFlags(0)
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	u := url.URL{Scheme: "ws", Host: *addr, Path: "/ws"}
+	log.Printf("[WS CLIENT] connecting to %s", u.String())
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		log.Fatal("[WS CLIENT] dial:", err)
+	}
+	defer c.Close()
+
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("[WS CLIENT] read:", err)
+				return
+			}
+			log.Printf("[WS CLIENT] recv: %s", message)
+		}
+	}()
+
+	for send := 0; send < 5; send++ {
+		err := c.WriteMessage(websocket.TextMessage, []byte(`{"event": "TEST_WS", "data": ""}`))
+		if err != nil {
+			log.Println("[WS CLIENT] write:", err)
+			return
+		}
+	}
+	time.Sleep(5 * time.Second)
+}
+
 
 EOM
