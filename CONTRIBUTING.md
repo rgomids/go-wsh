@@ -25,7 +25,7 @@ For change proposals, send an email to [mrrafagomides@gmail.com](mailto:mrrafago
 
 - `Fork` this repo to your account;
 - `Clone`;
-- Create a branch with this prefix: `GWSH-XXX`, where `XXX` is the issue number;
+- Create a branch with this prefix: `[feature, bugfix, hotfix]/GWSH-XXX`, where `XXX` is the issue number;
 - Work on your updates;
 - `Commit`;
 - Update your repo with `git push`;
