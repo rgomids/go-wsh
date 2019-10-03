@@ -152,7 +152,7 @@ func testWebSocketConnection(wg *sync.WaitGroup) {
 	}()
 
 	for send := 0; send < 5; send++ {
-		err := c.WriteMessage(websocket.TextMessage, []byte(`{"event": "TEST_WS", "data": ""}`))
+		err := c.WriteMessage(websocket.TextMessage, []byte("{\"event\": \"TEST_WS\", \"data\": \"\"}"))
 		if err != nil {
 			log.Println("[WS CLIENT] write:", err)
 			return
