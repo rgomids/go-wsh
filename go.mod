@@ -1,4 +1,4 @@
-module go-wsh
+module gowsh
 
 go 1.13
 
