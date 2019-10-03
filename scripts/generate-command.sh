@@ -9,7 +9,6 @@ package main
 
 import (
 	"flag"
-	"gowsh"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,6 +16,8 @@ import (
 	"os/signal"
 	"sync"
 	"time"
+
+	gowsh "github.com/RafaelGomides/go-wsh"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
