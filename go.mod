@@ -1,4 +1,4 @@
-module gowsh
+module github.com/RafaelGomides/go-wsh
 
 go 1.13
 
