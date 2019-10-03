@@ -9,7 +9,7 @@ package main
 
 import (
 	"flag"
-	gowsh "go-wsh"
+	"gowsh"
 	"log"
 	"net/http"
 	"net/url"
